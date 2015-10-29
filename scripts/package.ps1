@@ -10,20 +10,21 @@ Update-ExecutionPolicy -Policy Unrestricted
 
 Install-WindowsUpdate -AcceptEula
 if(Test-PendingReboot){ Invoke-Reboot }
-#
-# WinSDK (for CMS), Visual studio, PS and Git tools
-choco install powershell4 -y
+
+Write-BoxstarterMessage "Installing Choco packages..."
 choco install git -y
 choco install git.install -y
 choco install poshgit -y
 choco install notepadplusplus -y
-
-# Web platform installer
+choco install nuget.commandline -y
+choco install notepadplusplus -y
+choco install diffmerge -y
 choco install webpi -y
-
-# Browsers and Adobe reader
 choco install google-chrome-x64 -y
 choco install firefox -y
+
+Write-BoxstarterMessage "Coopy NuGet Config file..."
+Copy-Item a:\Nuget.Config C:\Users\vagrant\AppData\Roaming\NuGet
 
 Write-BoxstarterMessage "Install all IIS features (except FTP), these things take time...."
 # Need to clean up and only install what isnt already by using /All
@@ -107,13 +108,38 @@ if(!$vspathExists){
 	$args = "/Passive /InstallSelectableItems TypeScriptV3;WebToolsV1;MDDJSDependencyHiddenV1;BlissHidden;HelpHidden;JavaScript;NetFX4Hidden;NetFX45Hidden;NetFX451MTPackHidden;NetFX451MTPackCoreHidden;NetFX452MTPackHidden;NetFX46MTPackHidden;PortableDTPHidden;PreEmptiveDotfuscatorHidden;PreEmptiveAnalyticsHidden;ProfilerHidden;RoslynLanguageServicesHidden;SDKTools3Hidden;SDKTools4Hidden;StoryboardingHidden;WCFDataServicesHidden;Win81SDK_HiddenV1;PowerShellToolsV1;Node.jsV1;ToolsForWin81_WP80_WP81V1;GitForWindowsV1;GitHubVSV1;JavaScript_HiddenV1"
 	Start-Process $vspath $args -NoNewWindow -Wait
 }
+
 if(Test-PendingReboot){ Invoke-Reboot }
 
-#Write-BoxstarterMessage "Removing unused features..."
-#Remove-WindowsFeature -Name 'Powershell-ISE'
-#Get-WindowsFeature | 
-#? { $_.InstallState -eq 'Available' } | 
-#Uninstall-WindowsFeature -Remove
+Write-BoxstarterMessage "Adding New 4.5 Features"
+dism /online /Enable-Feature /FeatureName:NetFx4Extended-ASPNET45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:IIS-NetFxExtensibility45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:IIS-ASPNET45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:WCF-Services45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:WCF-HTTP-Activation45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:WCF-TCP-Activation45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:WCF-Pipe-Activation45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:WCF-MSMQ-Activation45 /All /NoRestart
+dism /online /Enable-Feature /FeatureName:WCF-TCP-PortSharing45 /All /NoRestart
+
+if(Test-PendingReboot){ Invoke-Reboot }
+
+Write-BoxstarterMessage "Installing ReSharper 9.2"
+$client = New-Object System.Net.WebClient
+$client.DownloadFile("http://download.jetbrains.com/resharper/JetBrains.ReSharperUltimate.2015.2-checked.exe","c:\ReSharper-9.2.exe")
+$resharper = "c:\ReSharper-9.2.exe"
+$args = "/VsVersion=14 /SpecificProductNames=teamCityAddin;ReSharper /IgnoreExtensions=True /Silent=True"
+Start-Process $resharper $args -NoNewWindow -Wait
+
+Write-BoxstarterMessage "SQL Management Studio"
+$Sqlinstaller = "\\uk-w2k8fp-trl01\TJShared$\DBA\SQLInstallMedia\SQL2014\ManagementStudio\SETUP.EXE"
+$args = '/ACTION=INSTALL /QS /IAcceptSQLServerLicenseTerms=”True” /FEATURES=CONN,BC,SSMS'
+Start-Process $Sqlinstaller $args -NoNewWindow -Wait
+
+Write-BoxstarterMessage "Removing unused features..."
+Get-WindowsFeature | 
+? { $_.InstallState -eq 'Available' } | 
+Uninstall-WindowsFeature -Remove
 
 Write-BoxstarterMessage "Cleaning SxS..."
 Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
