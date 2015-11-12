@@ -22,9 +22,7 @@ choco install diffmerge -y
 choco install webpi -y
 choco install google-chrome-x64 -y
 choco install firefox -y
-
-Write-BoxstarterMessage "Coopy NuGet Config file..."
-Copy-Item a:\Nuget.Config C:\Users\vagrant\AppData\Roaming\NuGet
+choco install nodejs -y
 
 Write-BoxstarterMessage "Install all IIS features (except FTP), these things take time...."
 # Need to clean up and only install what isnt already by using /All
@@ -101,10 +99,7 @@ Start-Process $webpi $args -NoNewWindow -Wait
 
 $vspathExists = Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0"
 if(!$vspathExists){
-	Write-BoxstarterMessage "Install Visual Studio 2015"
-	$a = New-Object System.Net.WebClient
-	$a.DownloadFile("https://go.microsoft.com/fwlink/?LinkId=615435&clcid=0x409","c:\vs2015.exe")
-	$vspath = "c:\vs2015.exe"
+	$vspath = "\\uk-w2k8fp-trl01\TJShared$\Development\installers\VisualStudio\VS2015_unattended\vs_professional.exe"
 	$args = "/Passive /InstallSelectableItems TypeScriptV3;WebToolsV1;MDDJSDependencyHiddenV1;BlissHidden;HelpHidden;JavaScript;NetFX4Hidden;NetFX45Hidden;NetFX451MTPackHidden;NetFX451MTPackCoreHidden;NetFX452MTPackHidden;NetFX46MTPackHidden;PortableDTPHidden;PreEmptiveDotfuscatorHidden;PreEmptiveAnalyticsHidden;ProfilerHidden;RoslynLanguageServicesHidden;SDKTools3Hidden;SDKTools4Hidden;StoryboardingHidden;WCFDataServicesHidden;Win81SDK_HiddenV1;PowerShellToolsV1;Node.jsV1;ToolsForWin81_WP80_WP81V1;GitForWindowsV1;GitHubVSV1;JavaScript_HiddenV1"
 	Start-Process $vspath $args -NoNewWindow -Wait
 }
@@ -133,7 +128,7 @@ Start-Process $resharper $args -NoNewWindow -Wait
 
 Write-BoxstarterMessage "SQL Management Studio"
 $Sqlinstaller = "\\uk-w2k8fp-trl01\TJShared$\DBA\SQLInstallMedia\SQL2014\ManagementStudio\SETUP.EXE"
-$args = '/ACTION=INSTALL /QS /IAcceptSQLServerLicenseTerms=”True” /FEATURES=CONN,BC,SSMS'
+$args = '/ACTION="Install" /IACCEPTSQLSERVERLICENSETERMS /Q /INDICATEPROGRESS /FEATURES="Tools"'
 Start-Process $Sqlinstaller $args -NoNewWindow -Wait
 
 Write-BoxstarterMessage "Removing unused features..."

@@ -13,7 +13,7 @@
       "shutdown_command": "C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /quiet /shutdown",
 	  "shutdown_timeout": "90m",
       "guest_os_type": "Windows2012_64",
-      "disk_size": 51440,
+      "disk_size": 91440,
       "floppy_files": [
         "{{user `autounattend`}}",
         "./scripts/openssh.ps1",
